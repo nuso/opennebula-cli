@@ -1,7 +1,7 @@
 FROM debian:buster
 
 RUN apt-get -y update
-RUN apt-get -y install ruby-nokogiri ruby-treetop ruby-parse-cron
+RUN apt-get -y install ruby-nokogiri ruby-treetop ruby-parse-cron ruby-activesupport
 
 RUN apt-get -y install git
 RUN git clone --depth 1 --branch release-6.4.0 https://github.com/OpenNebula/one.git
