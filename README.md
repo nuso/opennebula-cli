@@ -2,7 +2,7 @@
 
 ## Features:
 
- * Builds OpenNebula CLI Docker image based on `install.sh` from https://github.com/OpenNebula/one
+ * Builds OpenNebula CLI Docker image based on `install.sh -c` from https://github.com/OpenNebula/one
 
 ## Usage:
 
