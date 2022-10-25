@@ -8,5 +8,5 @@
 
  * Example usage for listing all VMs
    ```
-   docker run ghcr.io/nuso/opennebula-cli onevm list --user <username> --password <password> --endpoint <XML-RPC-URL>
+   docker run ghcr.io/nuso/opennebula-cli:master onevm list --user <username> --password <password> --endpoint <XML-RPC-URL>
    ```
