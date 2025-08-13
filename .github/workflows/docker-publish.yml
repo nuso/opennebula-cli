@@ -107,8 +107,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ steps.get_version.outputs.version }}
-            type=raw,value={{major}}.{{minor}}
-            type=raw,value={{major}}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
 
       - name: Build and push Docker image
         id: build-and-push
