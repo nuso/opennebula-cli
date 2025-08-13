@@ -1,17 +1,48 @@
-FROM debian:buster
+# Multi-stage build for OpenNebula onevm utility
+# Build stage
+FROM debian:bookworm-slim AS builder
 
-RUN apt-get -y update
-RUN apt-get -y install ruby-nokogiri ruby-treetop ruby-parse-cron ruby-activesupport
+# Install build dependencies in a single layer
+RUN apt-get update && apt-get install -y \
+    ruby-nokogiri \
+    ruby-treetop \
+    ruby-parse-cron \
+    ruby-activesupport \
+    git \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -y install git
-RUN git clone --depth 1 --branch release-6.4.0 https://github.com/OpenNebula/one.git
-RUN apt-get -y remove git git-man liberror-perl libperl5.28 patch perl perl-modules-5.28
-RUN apt-get -y clean
+# Clone OpenNebula source
+RUN git clone --depth 1 --branch release-6.8.0 https://github.com/OpenNebula/one.git /one
 
-RUN mkdir -p /var/lib/one/sunstone /usr/lib/one/sunstone/public/dist/
+# Install OpenNebula
 WORKDIR /one
-RUN ./install.sh -c
-WORKDIR /
-RUN rm -rf one
+RUN mkdir -p /var/lib/one/sunstone /usr/lib/one/sunstone/public/dist/ && \
+    ./install.sh -c
 
-CMD onevm
+# Runtime stage - minimal final image
+FROM debian:bookworm-slim
+
+# Install only runtime Ruby dependencies
+RUN apt-get update && apt-get install -y \
+    ruby-nokogiri \
+    ruby-treetop \
+    ruby-parse-cron \
+    ruby-activesupport \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+
+# Create necessary directories
+RUN mkdir -p /var/lib/one/sunstone /usr/lib/one/sunstone/public/dist/
+
+# Copy only the installed OpenNebula components from builder
+COPY --from=builder /usr/bin/onevm /usr/bin/onevm
+COPY --from=builder /usr/lib/one/ /usr/lib/one/
+COPY --from=builder /var/lib/one/ /var/lib/one/
+
+# Create a non-root user for security
+RUN groupadd -r oneadmin && useradd -r -g oneadmin oneadmin
+USER oneadmin
+
+CMD ["onevm"]
