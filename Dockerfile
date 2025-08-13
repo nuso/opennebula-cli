@@ -2,6 +2,10 @@
 # Build stage
 FROM debian:bookworm-slim AS builder
 
+# Build argument for OpenNebula version - defaults to master
+ARG OPENNEBULA_VERSION=master
+ENV OPENNEBULA_VERSION=${OPENNEBULA_VERSION}
+
 # Install build dependencies in a single layer
 RUN apt-get update && apt-get install -y \
     ruby-nokogiri \
@@ -12,8 +16,12 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone OpenNebula source
-RUN git clone --depth 1 --branch release-6.8.0 https://github.com/OpenNebula/one.git /one
+# Clone OpenNebula source using build arg
+RUN if [ "$OPENNEBULA_VERSION" = "master" ]; then \
+      git clone --depth 1 https://github.com/OpenNebula/one.git /one; \
+    else \
+      git clone --depth 1 --branch release-${OPENNEBULA_VERSION} https://github.com/OpenNebula/one.git /one; \
+    fi
 
 # Install OpenNebula
 WORKDIR /one
